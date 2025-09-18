@@ -1,0 +1,345 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --bg-color: #100a1c;
+            --main-purple: #9c3cff;
+            --light-purple: #c89cff;
+            --card-bg: #1e1233;
+            --text-color: #f0f0f0;
+            --placeholder-color: #8c829e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-color); }
+        .main-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; min-height: 100vh; margin: 0 auto; }
+        .header { width: 100%; display: flex; align-items: center; margin-bottom: 2rem; }
+        .header .menu-icon { font-size: 1.5rem; cursor: pointer; color: var(--light-purple); transition: color 0.2s ease; z-index: 1001; }
+        .header .menu-icon:hover { color: var(--main-purple); }
+        .logo { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--main-purple); box-shadow: 0 0 20px rgba(156, 60, 255, 0.7); object-fit: cover; margin-bottom: 1rem; }
+        .title { font-size: 2rem; font-weight: 600; color: var(--text-color); margin-bottom: 2rem; width: 100%; text-align: center; }
+        #createPanelForm { width: 100%; display: flex; flex-direction: column; gap: 1rem; }
+        input, select, .form-button { width: 100%; padding: 1rem; background-color: var(--card-bg); border: 2px solid var(--main-purple); border-radius: 8px; color: var(--text-color); font-size: 1rem; font-family: 'Poppins', sans-serif; transition: all 0.2s ease-in-out; }
+        input::placeholder { color: var(--placeholder-color); }
+        input:focus, select:focus { outline: none; box-shadow: 0 0 15px rgba(156, 60, 255, 0.8); }
+        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23c89cff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
+        .form-button { background-color: var(--main-purple); font-weight: 700; cursor: pointer; margin-top: 1rem; }
+        .form-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(156, 60, 255, 0.6); }
+        .form-button:disabled { background-color: #555; border-color: #555; cursor: not-allowed; }
+        .coupon-btn { border: 1px solid var(--light-purple); color: var(--light-purple); background-color: transparent; }
+        #couponCreationButtons { width: 100%; margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+        .footer { width: 100%; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--card-bg); text-align: center; }
+        .status-display { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+        .status-display span { color: var(--main-purple); text-transform: uppercase; }
+        .logout-btn-footer { background: transparent; border: 1px solid var(--light-purple); color: var(--light-purple); padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
+        .sidebar { height: 100%; width: 280px; position: fixed; z-index: 1002; top: 0; left: 0; background-color: var(--card-bg); overflow-x: hidden; transition: 0.3s; transform: translateX(-100%); padding-top: 60px; border-right: 2px solid var(--main-purple); }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar a { padding: 10px 15px; text-decoration: none; font-size: 1.2rem; color: var(--light-purple); display: block; transition: 0.2s; }
+        .sidebar a:hover { color: var(--text-color); background-color: var(--main-purple); }
+        .sidebar .closebtn { position: absolute; top: 0; right: 25px; font-size: 36px; margin-left: 50px; color: var(--text-color); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1001; display: none; }
+        .overlay.show { display: block; }
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1003; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+        .modal-backdrop.show { opacity: 1; pointer-events: all; }
+        .modal-content { background-color: var(--card-bg); padding: 2rem; border-radius: 15px; border: 2px solid var(--main-purple); box-shadow: 0 0 25px rgba(156, 60, 255, 0.7); width: 90%; max-width: 500px; transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-backdrop.show .modal-content { transform: scale(1); }
+        .modal-header { text-align: center; border-bottom: 1px solid var(--main-purple); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .modal-header h2 { color: var(--main-purple); margin: 0; }
+        .modal-header p { color: var(--light-text); margin-top: 0.5rem; }
+        .modal-body .result-item { margin-bottom: 1rem; }
+        .modal-body label { display: block; margin-bottom: 0.25rem; color: var(--light-text); text-align: left; }
+        .result-with-copy { display: flex; align-items: center; gap: 0.5rem; background-color: var(--bg-color); padding: 0.5rem; border-radius: 5px; }
+        .result-with-copy span { flex-grow: 1; word-break: break-all; color: var(--text-color); text-align: left; }
+        .copy-btn { background-color: var(--main-purple); color: var(--text-color); border: none; padding: 0.5rem; border-radius: 5px; cursor: pointer; width: auto; }
+        .modal-footer { margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .login-btn, .close-btn { width: 100%; padding: 0.75rem; border-radius: 0.5rem; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; transition: all 0.3s ease; }
+        .login-btn { background-color: var(--main-purple); color: var(--text-color); border: none; }
+        .login-btn:hover { background-color: var(--light-purple); color: var(--bg-color); }
+        .close-btn { background-color: transparent; color: var(--light-text); border: 1px solid var(--light-text); }
+        .close-btn:hover { background-color: var(--light-text); color: var(--bg-color); }
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        #loadingOverlay.show { opacity: 1; pointer-events: all; }
+        .spinner { width: 60px; height: 60px; border: 5px solid var(--placeholder-color); border-top-color: var(--main-purple); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <div class="menu-icon" id="openSidebarBtn"><i class="fas fa-bars"></i></div>
+        </header>
+        <img src="https://files.catbox.moe/iwttw3.png" alt="Logo" class="logo">
+        <h1 class="title">Panel Generator</h1>
+        <div id="serverList" class="server-list"></div>
+        <form id="createPanelForm" style="display: none;">
+            <input type="text" id="panelUsernameInput" placeholder="Masukkan Username Panel Anda" required autocomplete="off">
+            <input type="password" id="panelPasswordInput" placeholder="Masukkan Password Panel Anda" required autocomplete="off">
+            <input type="text" id="serverNameInput" placeholder="Nama Server (Opsional)" autocomplete="off">
+            <select id="panelRamSelect" required>
+                <option value="" disabled selected>Select RAM</option>
+            </select>
+        </form>
+        <div id="creationButtons"></div>
+        <footer class="footer">
+            <div class="status-display">STATUS: <span id="userRoleStatus">LOADING...</span></div>
+            <button id="logoutBtn" class="logout-btn-footer">ACCOUNT / LOGOUT</button>
+            <p class="credit" style="margin-top:1rem;">Created By @knowndraa</p>
+        </footer>
+    </div>
+    
+    <nav id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" id="closeSidebarBtn">&times;</a>
+        <div id="sidebarContent"></div>
+    </nav>
+    <div id="overlay" class="overlay"></div>
+    
+    <div id="redeemModal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Redeem Kupon</h2></div>
+            <div class="modal-body">
+                <input type="text" id="couponInput" placeholder="Masukkan Kode Kupon" autocomplete="off" style="text-transform: uppercase;">
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" id="closeRedeemModalBtn" style="background-color: #ddd; color: var(--bg-color);">Batal</button>
+                <button class="login-btn" id="redeemCouponBtn">Redeem</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="resultModal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header"><h2>✅ Panel Berhasil Dibuat!</h2><p>Berikut adalah detail akun panel Anda.</p></div>
+            <div class="modal-body">
+                <div class="result-item"><label>Username</label><div class="result-with-copy"><span id="panelUsername"></span><button class="copy-btn" onclick="window.copyResultText(this, 'panelUsername')"><i class="fas fa-copy"></i></button></div></div>
+                <div class="result-item"><label>Password</label><div class="result-with-copy"><span id="panelPassword"></span><button class="copy-btn" onclick="window.copyResultText(this, 'panelPassword')"><i class="fas fa-copy"></i></button></div></div>
+                <div class="result-item"><label>Login URL</label><div class="result-with-copy"><span id="panelLoginUrlText"></span><button class="copy-btn" onclick="window.copyResultText(this, 'panelLoginUrlText')"><i class="fas fa-copy"></i></button></div></div>
+            </div>
+            <div class="modal-footer"><a href="#" id="panelLoginUrlLink" target="_blank" class="login-btn">Login ke Panel</a><button id="closeModalBtn" class="close-btn">Tutup</button></div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut, getIdToken } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        
+        const openSidebarBtn = document.getElementById('openSidebarBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const sidebarContent = document.getElementById('sidebarContent');
+        const userRoleStatus = document.getElementById('userRoleStatus');
+        const createPanelForm = document.getElementById('createPanelForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const ramSelect = document.getElementById('panelRamSelect');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const creationButtons = document.getElementById('creationButtons');
+        const redeemModal = document.getElementById('redeemModal');
+        const closeRedeemModalBtn = document.getElementById('closeRedeemModalBtn');
+        const redeemCouponBtn = document.getElementById('redeemCouponBtn');
+        const couponInput = document.getElementById('couponInput');
+        const resultModal = document.getElementById('resultModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        let currentUser = null;
+        let idToken = null;
+        let unsubscribe = null;
+        
+        function showToast(message, type = 'success') {
+            const colors = { success: 'linear-gradient(to right, #00b09b, #96c93d)', error: 'linear-gradient(to right, #ff5f6d, #ffc371)', info: 'linear-gradient(to right, #0072ff, #00c6ff)' };
+            Toastify({ text: message, duration: 3000, close: true, gravity: "top", position: "right", stopOnFocus: true, style: { background: colors[type] || colors.info } }).showToast();
+        }
+        
+        const showLoader = () => loadingOverlay.classList.add('show');
+        const hideLoader = () => loadingOverlay.classList.remove('show');
+
+        function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('show'); }
+        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+        
+        function openRedeemModal() { redeemModal.classList.add('show'); }
+        function closeRedeemModal() { redeemModal.classList.remove('show'); }
+
+        openSidebarBtn.onclick = openSidebar;
+        closeSidebarBtn.onclick = closeSidebar;
+        overlay.onclick = closeSidebar;
+        closeRedeemModalBtn.onclick = closeRedeemModal;
+
+        redeemCouponBtn.onclick = async () => {
+            const couponCode = couponInput.value.trim();
+            if (!couponCode) return showToast('Kode tidak boleh kosong', 'error');
+            
+            showLoader();
+            try {
+                const response = await fetch('/api/redeem-coupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                    body: JSON.stringify({ couponCode })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                showToast(result.message, 'success');
+                couponInput.value = '';
+                closeRedeemModal();
+            } catch(error) {
+                showToast(error.message, 'error');
+            } finally {
+                hideLoader();
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (unsubscribe) unsubscribe();
+            if (user) {
+                currentUser = user;
+                idToken = await getIdToken(user);
+                const userDocRef = doc(db, "users", user.uid);
+                unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        loadUserDataAndSetupForm(docSnap.data());
+                    } else { signOut(auth); }
+                });
+            } else { window.location.replace('/login.html'); }
+        });
+
+        function loadUserDataAndSetupForm(userData) {
+            userRoleStatus.textContent = userData.role.replace(/_/g, " ");
+            
+            sidebarContent.innerHTML = '';
+            const redeemLink = document.createElement('a');
+            redeemLink.href = '#';
+            redeemLink.textContent = 'Redeem Kupon';
+            redeemLink.onclick = (e) => { e.preventDefault(); openRedeemModal(); };
+            sidebarContent.appendChild(redeemLink);
+
+            if (userData.role === 'owner' || userData.role === 'reseller_apk') {
+                const dashboardLink = document.createElement('a');
+                dashboardLink.href = '/admin.html';
+                dashboardLink.textContent = (userData.role === 'owner') ? 'Admin Dashboard' : 'Reseller APK Dashboard';
+                sidebarContent.appendChild(dashboardLink);
+            }
+            const logoutLink = document.createElement('a');
+            logoutLink.href = '#';
+            logoutLink.textContent = 'Logout';
+            logoutLink.onclick = (e) => { e.preventDefault(); signOut(auth); };
+            sidebarContent.appendChild(logoutLink);
+
+            creationButtons.innerHTML = '';
+            
+            const canCreateNormalPanel = !(userData.role === 'user' && userData.panelCount >= 1);
+            if (canCreateNormalPanel) {
+                createPanelForm.style.display = 'flex';
+                let ramOptions = [];
+                if (userData.role === 'owner' || userData.role === 'reseller' || userData.role === 'reseller_apk') {
+                    ramOptions = [...Array(10).keys()].map(i => `${i + 1}gb`);
+                    ramOptions.push("unlimited");
+                } else { ramOptions = ["1gb", "2gb"]; }
+                
+                ramSelect.innerHTML = '<option value="" disabled selected>Select RAM</option>';
+                ramOptions.forEach(ram => {
+                    const option = document.createElement('option');
+                    option.value = ram;
+                    option.textContent = ram === 'unlimited' ? 'Unlimited RAM' : `${ram.replace('gb', '')} GB RAM`;
+                    ramSelect.appendChild(option);
+                });
+
+                const normalCreateBtn = document.createElement('button');
+                normalCreateBtn.className = 'form-button';
+                normalCreateBtn.textContent = 'Create Panel';
+                normalCreateBtn.type = 'submit';
+                normalCreateBtn.setAttribute('form', 'createPanelForm');
+                creationButtons.appendChild(normalCreateBtn);
+            } else {
+                createPanelForm.style.display = 'none';
+            }
+
+            const unclaimedCoupons = (userData.claimedCoupons || []).filter(c => !c.used);
+            unclaimedCoupons.forEach(coupon => {
+                const couponBtn = document.createElement('button');
+                couponBtn.className = 'form-button coupon-btn';
+                couponBtn.textContent = `Create Panel (${coupon.rewardRam.toUpperCase()} - Kupon ${coupon.code})`;
+                couponBtn.type = 'button';
+                couponBtn.onclick = () => handleCouponSubmit(coupon.code, coupon.rewardRam);
+                creationButtons.appendChild(couponBtn);
+            });
+        }
+        
+        async function handleCouponSubmit(couponCode, couponRam) {
+            const username = document.getElementById('panelUsernameInput').value.trim();
+            const password = document.getElementById('panelPasswordInput').value.trim();
+            const serverName = document.getElementById('serverNameInput').value.trim();
+            if (!username || !password) {
+                return showToast('Username dan Password wajib diisi untuk membuat panel kupon.', 'error');
+            }
+            await submitPanelCreation({ username, password, serverName, ram: couponRam, usedCouponCode: couponCode });
+        }
+        
+        createPanelForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('panelUsernameInput').value.trim();
+            const password = document.getElementById('panelPasswordInput').value.trim();
+            const serverName = document.getElementById('serverNameInput').value.trim();
+            const ram = document.getElementById('panelRamSelect').value;
+            if (!ram) return showToast('Pilih RAM terlebih dahulu.', 'error');
+            await submitPanelCreation({ username, password, serverName, ram, usedCouponCode: null });
+        });
+
+        async function submitPanelCreation(payload) {
+            showLoader();
+            try {
+                const idToken = await getIdToken(currentUser);
+                const response = await fetch('/api/create-panel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Terjadi kesalahan.');
+                
+                document.getElementById('panelLoginUrlText').textContent = data.loginUrl;
+                document.getElementById('panelLoginUrlLink').href = data.loginUrl;
+                document.getElementById('panelUsername').textContent = data.username;
+                document.getElementById('panelPassword').textContent = data.password;
+                
+                createPanelForm.reset();
+                showToast('Panel berhasil dibuat!', 'success');
+                showModal();
+            } catch (error) {
+                showToast(`Gagal: ${error.message}`, 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        function showModal() { resultModal.classList.add('show'); }
+        function hideModal() { resultModal.classList.remove('show'); }
+
+        window.copyResultText = function(button, elementId) {
+             const textElement = document.getElementById(elementId);
+             if (textElement && textElement.textContent) {
+                 navigator.clipboard.writeText(textElement.textContent).then(() => {
+                     const originalIcon = button.innerHTML;
+                     button.innerHTML = '✅';
+                     showToast('Teks disalin!', 'info');
+                     setTimeout(() => { button.innerHTML = originalIcon; }, 1500);
+                 });
+             }
+        }
+        closeModalBtn.addEventListener('click', hideModal);
+        resultModal.addEventListener('click', (e) => { if (e.target === resultModal) hideModal(); });
+    </script>
+</body>
+</html>
